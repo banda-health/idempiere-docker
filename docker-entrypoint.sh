@@ -2,8 +2,6 @@
 
 set -Eeo pipefail
 
-IDEMPIERE_STATUS=2
-
 KEY_STORE_PASS=${KEY_STORE_PASS:-myPassword}
 KEY_STORE_ON=${KEY_STORE_ON:-idempiere.org}
 KEY_STORE_OU=${KEY_STORE_OU:-iDempiere Docker}
@@ -85,7 +83,8 @@ if [[ "$1" == "idempiere" ]]; then
 fi
 
 # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-IDEMPIERE_STATUS=0
+#touch ./.unhealthy
+touch ./.healthy
 
 #exec "$@"
 
