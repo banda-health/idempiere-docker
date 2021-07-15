@@ -2,6 +2,8 @@
 
 set -Eeo pipefail
 
+IDEMPIERE_STATUS=2
+
 KEY_STORE_PASS=${KEY_STORE_PASS:-myPassword}
 KEY_STORE_ON=${KEY_STORE_ON:-idempiere.org}
 KEY_STORE_OU=${KEY_STORE_OU:-iDempiere Docker}
@@ -68,7 +70,7 @@ if [[ "$1" == "idempiere" ]]; then
 
     if PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
         echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
-        PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -c "drop database ${DB_NAME}"
+        PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -U postgres -c "drop database ${DB_NAME};"
     fi
     cd utils
     echo "Importing new database '$DB_NAME'..."
@@ -83,5 +85,6 @@ if [[ "$1" == "idempiere" ]]; then
 fi
 
 # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
+IDEMPIERE_STATUS=0
 
 #exec "$@"

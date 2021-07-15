@@ -11,12 +11,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends nano postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-COPY idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere-server.tar.gz
+COPY idempiere.build.gtk.linux.x86_64.tar.gz /tmp
 
-RUN tar -xf /tmp/idempiere-server.tar.gz && \
+RUN tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
     mv /tmp/x86_64/* $IDEMPIERE_HOME && \
-    rm -rf /tmp/idempiere*
-RUN cat $IDEMPIERE_HOME/MD5SUMS
+    rm -rf /tmp/idempiere* && \
+    rm -rf /tmp/x86_64*
 RUN ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
 
 COPY docker-entrypoint.sh $IDEMPIERE_HOME
