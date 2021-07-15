@@ -24,5 +24,4 @@ services:
       - ${POSTGRES_PORT}:5432
 
 volumes:
-  idempiere_plugins:
-  idempiere_config:
+  migration:
