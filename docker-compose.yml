@@ -7,6 +7,7 @@ services:
       - postgres
     volumes:
       - migration:/opt/idempiere/banda-migration
+      - ./docker-entrypoint.sh:/opt/idempiere/docker-entrypoint.sh
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_PASS=${IDEMPIERE_DATABASE_PASSWORD}
