@@ -90,4 +90,4 @@ IDEMPIERE_STATUS=0
 #exec "$@"
 
 # make sure the container doesn't stop
-/usr/local/bin/shell.sh ; sleep infinity
+sleep infinity
