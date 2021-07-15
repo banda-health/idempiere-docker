@@ -13,7 +13,7 @@ RUN apt-get update && \
 
 COPY idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere-server.tar.gz
 
-RUN tar -xf /tmp/idempiere-server.tar.gz -d /tmp && \
+RUN tar -xf /tmp/idempiere-server.tar.gz && \
     mv /tmp/x86_64/* $IDEMPIERE_HOME && \
     rm -rf /tmp/idempiere*
 RUN cat $IDEMPIERE_HOME/MD5SUMS
