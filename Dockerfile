@@ -22,7 +22,5 @@ RUN ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
 COPY docker-entrypoint.sh $IDEMPIERE_HOME
 COPY idempiere-server.sh $IDEMPIERE_HOME
 
-RUN ls -l docker-entrypoint.sh
-
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["idempiere"]
