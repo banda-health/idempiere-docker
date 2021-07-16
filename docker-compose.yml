@@ -8,6 +8,7 @@ services:
     volumes:
       - ./migration:/opt/idempiere/banda-migration
       - ./docker-entrypoint.sh:/opt/idempiere/docker-entrypoint.sh
+      - ./idempiere.build.gtk.linux.x86_64.tar.gz:/tmp/idempiere.build.gtk.linux.x86_64.tar.gz
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_PASS=${IDEMPIERE_DATABASE_PASSWORD}
