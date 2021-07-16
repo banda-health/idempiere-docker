@@ -5,6 +5,9 @@ set -Eeo pipefail
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
+# remove all log files
+rm -rf log/*
+
 tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
     mv /tmp/x86_64/* $IDEMPIERE_HOME && \
     rm -rf /tmp/idempiere* && \
@@ -73,7 +76,7 @@ if [[ "$1" == "idempiere" ]]; then
     echo -e "$JAVA_HOME\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
     echo "Copying over Banda migration files"
-    cp -r banda-migration migration
+    cp -r banda-migration/. migration
 
     if PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
         echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
@@ -92,6 +95,11 @@ if [[ "$1" == "idempiere" ]]; then
 fi
 
 # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
+if grep -q "Failed application of migration/" log/*; then
+    exit 1
+fi
+
+# remove the unhealthy file so Docker health check knows everything succeeded
 rm ./.unhealthy
 
 #exec "$@"
