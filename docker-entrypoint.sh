@@ -93,7 +93,6 @@ fi
 
 # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
 rm ./.unhealthy
-touch ./.healthy
 
 #exec "$@"
 
