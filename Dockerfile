@@ -12,13 +12,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY idempiere.build.gtk.linux.x86_64.tar.gz /tmp
-
-RUN tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
-    mv /tmp/x86_64/* $IDEMPIERE_HOME && \
-    rm -rf /tmp/idempiere* && \
-    rm -rf /tmp/x86_64*
-RUN ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
-
 COPY docker-entrypoint.sh $IDEMPIERE_HOME
 COPY idempiere-server.sh $IDEMPIERE_HOME
 
