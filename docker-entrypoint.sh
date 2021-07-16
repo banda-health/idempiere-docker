@@ -2,15 +2,14 @@
 
 set -Eeo pipefail
 
-
+# this must be created first so the health check knows what the status is
+touch ./.unhealthy
 
 tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
     mv /tmp/x86_64/* $IDEMPIERE_HOME && \
     rm -rf /tmp/idempiere* && \
     rm -rf /tmp/x86_64*
 ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
-
-touch ./.unhealthy
 
 KEY_STORE_PASS=${KEY_STORE_PASS:-myPassword}
 KEY_STORE_ON=${KEY_STORE_ON:-idempiere.org}
