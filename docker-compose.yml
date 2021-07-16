@@ -21,6 +21,7 @@ services:
       interval: 1s
       timeout: 1s
       retries: 600
+      start-period: 5s
 
   postgres:
     image: postgres:12
