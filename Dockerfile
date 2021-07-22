@@ -11,10 +11,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends nano postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-COPY idempiere-server.sh $IDEMPIERE_HOME
-
-# Ensure file is exeuctable for different builds
-RUN ["chmod", "+x", "./docker-entrypoint.sh"]
+COPY idempiere-server.sh ./
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["idempiere"]
