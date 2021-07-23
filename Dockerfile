@@ -12,8 +12,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY idempiere.build.gtk.linux.x86_64.tar.gz /tmp
-COPY ./docker-entrypoint.sh ./
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
 COPY ./idempiere-server.sh ./
 
+# Set permissions correctly
+RUN chmod +x ./docker-entrypoint.sh
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["idempiere"]
