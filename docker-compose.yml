@@ -16,7 +16,6 @@ services:
       - ${IDEMPIERE_PORT}:8080
       - ${IDEMPIERE_SSL_PORT}:8443
       - ${TELNET_PORT}:12612
-    container_name: ${CONTAINER_NAME}
     healthcheck:
       test: "[ ! -f \".unhealthy\" ] && exit 0 || exit 1"
       interval: 1s
