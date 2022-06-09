@@ -42,7 +42,6 @@ MAIL_PASS=${MAIL_PASS:-info}
 MAIL_ADMIN=${MAIL_ADMIN:-info@idempiere}
 MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE:false}
 IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB:false}
-EXPORT_DB=${EXPORT_DB:false}
 
 if [[ -n "$DB_PASS_FILE" ]]; then
     echo "DB_PASS_FILE set as $DB_PASS_FILE..."
@@ -131,13 +130,6 @@ if [[ "$1" == "idempiere" ]]; then
     # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
     if grep -q "Failed application of migration/" log/*; then
         exit 1
-    fi
-
-    # Export the DB to a file to be leveraged by others
-    if [[ $EXPORT_DB == "true" ]]; then
-        echo "Create database export..."
-        PGPASSWORD=$DB_ADMIN_PASS pg_dump -h $DB_HOST -U postgres -Fc $DB_NAME > /home/src/idempiere-db.dmp
-        echo "done!"
     fi
 fi
 
