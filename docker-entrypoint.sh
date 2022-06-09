@@ -112,9 +112,9 @@ if [[ "$1" == "idempiere" ]]; then
         cd ..
     fi
     if (( wasBaseIdempiereDBUsed == 0 )) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
-        if [ -d "/home/src/migration" ]; then
+        if [[ -d "/home/src/migration" ]]; then
             echo "Copying over Banda migration files..."
-            cp -r /home/src/migration/. migration
+            cp -r /home/src/migration/* migration
         fi
 
         cd utils
@@ -132,7 +132,9 @@ if [[ "$1" == "idempiere" ]]; then
 
     # Export the DB to a file to be leveraged by others
     if [[ $EXPORT_DB == "true" ]]; then
+        echo "Create database export..."
         PGPASSWORD=$DB_ADMIN_PASS pg_dump -h $DB_HOST -U postgres -Fc $DB_NAME > /home/src/idempiere-db.dmp
+        echo "done!"
     fi
 fi
 
