@@ -147,3 +147,7 @@ fi
 rm ./.unhealthy
 
 exec "$@"
+
+if [[ $CI == "true" ]]; then
+    sleep infinity
+fi
