@@ -7,7 +7,10 @@ touch ./.unhealthy
 
 # remove all log files
 rm -rf log/*
-rm -rf /opt/idempiere/*
+# Enable globs to allow removal of all files but this one
+shopt -s extglob
+rm -rf !("docker-entrypoint.sh")
+shopt -u extglob
 
 cp /home/src/idempiere.build.gtk.linux.x86_64.tar.gz /tmp
 
