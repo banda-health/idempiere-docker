@@ -7,6 +7,9 @@ touch ./.unhealthy
 
 # remove all log files
 rm -rf log/*
+rm -rf /opt/idempiere/*
+
+cp /home/src/idempiere.build.gtk.linux.x86_64.tar.gz /tmp
 
 tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
     mv /tmp/x86_64/* $IDEMPIERE_HOME && \
@@ -35,6 +38,8 @@ MAIL_USER=${MAIL_USER:-info}
 MAIL_PASS=${MAIL_PASS:-info}
 MAIL_ADMIN=${MAIL_ADMIN:-info@idempiere}
 MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE:false}
+IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB:false}
+EXPORT_DB=${EXPORT_DB:false}
 
 if [[ -n "$DB_PASS_FILE" ]]; then
     echo "DB_PASS_FILE set as $DB_PASS_FILE..."
@@ -75,34 +80,70 @@ if [[ "$1" == "idempiere" ]]; then
     echo "Executing console-setup..."
     echo -e "$JAVA_HOME\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
-    echo "Copying over Banda migration files"
-    cp -r banda-migration/. migration
-
-    if PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
-        echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
-        PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -U postgres -c "drop database ${DB_NAME};"
+    # If no DB exists or we want a fresh one, do it
+    [ $IDEMPIERE_FRESH_DB == "true" ]
+    willUseNewDb=$?
+    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1; then
+        willUseNewDb=0
     fi
-    cd utils
-    echo "Importing new database '$DB_NAME'..."
-    ./RUN_ImportIdempiere.sh
-    echo "Synchronizing database..."
-    ./RUN_SyncDB.sh
-    echo "Applying 2-packs..."
-    ./RUN_ApplyPackInFromFolder.sh migration
-    cd ..
-    echo "Signing database..."
-    ./sign-database-build.sh
+    wasBaseIdempiereDBUsed=1
+    if (( willUseNewDb == 0 )); then
+        # Delete the DB, if it's there
+        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
+            echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -U postgres -c "drop database ${DB_NAME};"
+        fi
+
+        cd utils
+        # If a DB file was provided, we'll use that
+        if [[ -f "/home/src/initial-db.dmp" ]]; then
+            PGPASSWORD=$DB_ADMIN_PASS psql -h "$DB_HOST" -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" 2>&1 > /dev/null
+            PGPASSWORD=$DB_ADMIN_PASS psql -h "$DB_HOST" -U postgres -c "create database ${DB_NAME} owner adempiere;"
+            echo "Importing DB initialization file to database '$DB_NAME'..."
+            PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -U postgres -Fc -j 8 -d $DB_NAME /home/src/initial-db.dmp
+            PGPASSWORD=$DB_ADMIN_PASS psql -h "$DB_HOST" -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" 2>&1 > /dev/null
+        else
+            wasBaseIdempiereDBUsed=0
+            echo "Importing new database '$DB_NAME'..."
+            ./RUN_ImportIdempiere.sh
+        fi
+        echo "Synchronizing database..."
+        ./RUN_SyncDB.sh
+        cd ..
+    fi
+    if (( wasBaseIdempiereDBUsed == 0 )) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
+        echo "Copying over Banda migration files..."
+        cp -r /home/src/migration/. migration
+
+        cd utils
+        echo "Synchronizing database..."
+        ./RUN_SyncDB.sh
+        cd ..
+        echo "Signing database..."
+        ./sign-database-build.sh
+    fi
+
+    # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
+    if grep -q "Failed application of migration/" log/*; then
+        exit 1
+    fi
+
+    # Export the DB to a file to be leveraged by others
+    if [[ $EXPORT_DB == "true" ]]; then
+        PGPASSWORD=$DB_ADMIN_PASS pg_dump -h $DB_HOST -U postgres -Fc $DB_NAME > /home/src/idempiere-db.dmp
+    fi
 fi
 
-# if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-if grep -q "Failed application of migration/" log/*; then
-    exit 1
+# Copy the plugins to the plugin directory, if there are any
+cp -r /home/src/plugins/* /opt/idempiere/plugins
+
+# Copy any plugin configuration for plugin auto-starts
+if [[ -f "/home/src/bundles.info" ]] && [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
+    echo "Ensuring bundles installed..."
+    cat /home/src/bundles.info >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded
 rm ./.unhealthy
 
-#exec "$@"
-
-# make sure the container doesn't stop
-sleep infinity
+exec "$@"

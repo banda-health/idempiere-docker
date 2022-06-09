@@ -6,12 +6,13 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./migration:/opt/idempiere/banda-migration
-      - ./docker-entrypoint.sh:/opt/idempiere/docker-entrypoint.sh
-      - ./idempiere.build.gtk.linux.x86_64.tar.gz:/tmp/idempiere.build.gtk.linux.x86_64.tar.gz
+      - ./src:/home/src
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_PASS=${IDEMPIERE_DATABASE_PASSWORD}
+      - IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB}
+      - MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE}
+      - EXPORT_DB=${EXPORT_DB}
     ports:
       - ${IDEMPIERE_PORT}:8080
       - ${IDEMPIERE_SSL_PORT}:8443
