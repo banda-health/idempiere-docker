@@ -133,6 +133,10 @@ if [[ "$1" == "idempiere" ]]; then
     fi
 fi
 
+# Run the 2-packs, if there are any
+echo "Applying 2-packs..."
+./utils/RUN_ApplyPackInFromFolder.sh migration
+
 # Copy the plugins to the plugin directory, if there are any
 if [[ -d "/home/src/plugins" ]]; then
     echo "Copying plugins..."
