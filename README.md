@@ -1,4 +1,5 @@
 # idemp-docker
+![TeamCity build status](https://teamcity.bandahealth.org/app/rest/builds/buildType:id:BHGO_IdempDocker_Build/statusIcon.svg)
 
 The Banda version of iDempiere docker to use our specific files and for testing.
 
@@ -57,6 +58,8 @@ See the `.env.default` file for examples of what should go into your own `.env` 
 	* IDEMPIERE_PORT
 	* POSTGRES_PORT
 	* IDEMPIERE_SSL_PORT
+
+Also, the project defaults to running in a CI pipeline. To undo this, remove the `CI` assignment in your `.env` file.
 
 ## Unit Testing
 It is a good idea to make sure that the DB is created each time, so make use of the environment variable mentioned under [DB Initialization](#db-initialization) above.
