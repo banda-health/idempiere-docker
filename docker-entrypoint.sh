@@ -112,8 +112,10 @@ if [[ "$1" == "idempiere" ]]; then
         cd ..
     fi
     if (( wasBaseIdempiereDBUsed == 0 )) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
-        echo "Copying over Banda migration files..."
-        cp -r /home/src/migration/. migration
+        if [ -d "/home/src/migration" ]; then
+            echo "Copying over Banda migration files..."
+            cp -r /home/src/migration/. migration
+        fi
 
         cd utils
         echo "Synchronizing database..."
@@ -148,6 +150,7 @@ rm ./.unhealthy
 
 exec "$@"
 
+# If we're in our CI pipeline, don't stop the container - the pipeline will close it at the right time
 if [[ $CI == "true" ]]; then
     sleep infinity
 fi
