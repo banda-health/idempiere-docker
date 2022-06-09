@@ -142,7 +142,10 @@ if [[ "$1" == "idempiere" ]]; then
 fi
 
 # Copy the plugins to the plugin directory, if there are any
-cp -r /home/src/plugins/* /opt/idempiere/plugins
+if [[ -d "/home/src/plugins" ]]; then
+    echo "Copying plugins..."
+    cp -r /home/src/plugins/* /opt/idempiere/plugins
+fi
 
 # Copy any plugin configuration for plugin auto-starts
 if [[ -f "/home/src/bundles.info" ]] && [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
