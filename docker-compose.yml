@@ -6,7 +6,6 @@ services:
       - postgres
     volumes:
       - ./src:/home/src
-      - /home/src/idempiere.build.gtk.linux.x86_64.tar.gz
     environment:
       - CI=${CI}
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}

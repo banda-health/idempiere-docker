@@ -11,7 +11,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install iDempiere
-COPY src/idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere/
+COPY idempiere/idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere/
 RUN tar -zxf /tmp/idempiere/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp/idempiere && \
     mv /tmp/idempiere/x86_64/* $IDEMPIERE_HOME && \
     rm -rf /tmp/idempiere

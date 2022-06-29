@@ -1,3 +1,4 @@
-src
+src/
 .env
 idempiere-db.dmp
+idempiere/
