@@ -22,9 +22,9 @@ RUN chmod -x idempiere-server.sh
 
 # Now set the entrypoint
 WORKDIR /
-COPY docker-entrypoint.sh ./
+COPY ./docker-entrypoint.sh .
 RUN chmod -x docker-entrypoint.sh
 
 # Set the entrypoint & commands
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["idempiere"]
