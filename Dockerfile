@@ -17,13 +17,11 @@ RUN tar -zxf /tmp/idempiere/idempiere.build.gtk.linux.x86_64.tar.gz --directory 
     rm -rf /tmp/idempiere
 
 # Copy over shell script
-COPY idempiere-server.sh ./
-RUN chmod -x idempiere-server.sh
+COPY idempiere-server.sh .
 
 # Now set the entrypoint
 WORKDIR /
-COPY ./docker-entrypoint.sh .
-RUN chmod -x docker-entrypoint.sh
+COPY docker-entrypoint.sh .
 
 # Set the entrypoint & commands
 ENTRYPOINT ["/docker-entrypoint.sh"]
