@@ -5,27 +5,15 @@ set -Eeo pipefail
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
-# remove all log files
-rm -rf log/*
-# Enable globs to allow removal of all files but this one
-shopt -s extglob
-rm -rf !("docker-entrypoint.sh")
-shopt -u extglob
-
-cp /home/src/idempiere.build.gtk.linux.x86_64.tar.gz /tmp
-
-tar -zxf /tmp/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp && \
-    mv /tmp/x86_64/* $IDEMPIERE_HOME && \
-    rm -rf /tmp/idempiere* && \
-    rm -rf /tmp/x86_64*
+# Link the idempiere command to the server script
 ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
 
-KEY_STORE_PASS=${KEY_STORE_PASS:-myPassword}
-KEY_STORE_ON=${KEY_STORE_ON:-idempiere.org}
-KEY_STORE_OU=${KEY_STORE_OU:-iDempiere Docker}
+KEY_STORE_PASS=${KEY_STORE_PASS:-bandaHealth}
+KEY_STORE_ON=${KEY_STORE_ON:-bandahealth.org}
+KEY_STORE_OU=${KEY_STORE_OU:-Banda iDempiere Docker}
 KEY_STORE_O=${KEY_STORE_O:-iDempiere}
-KEY_STORE_L=${KEY_STORE_L:-myTown}
-KEY_STORE_S=${KEY_STORE_S:-CA}
+KEY_STORE_L=${KEY_STORE_L:-Colorado Springs}
+KEY_STORE_S=${KEY_STORE_S:-CO}
 KEY_STORE_C=${KEY_STORE_C:-US}
 IDEMPIERE_HOST=${IDEMPIERE_HOST:-0.0.0.0}
 IDEMPIERE_PORT=${IDEMPIERE_PORT:-8080}
@@ -143,10 +131,15 @@ if [[ -d "/home/src/plugins" ]]; then
     cp -r /home/src/plugins/* /opt/idempiere/plugins
 fi
 
-# Copy any plugin configuration for plugin auto-starts
-if [[ -f "/home/src/bundles.info" ]] && [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
-    echo "Ensuring bundles installed..."
-    cat /home/src/bundles.info >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+# Generate bundle info, if need be
+if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
+    if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
+        echo "Adding plugins to bundles.info..."
+        ls /opt/idempiere/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,true/' | sed 's/\(.*test.*\),4,true/\1,4,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+    else if [[ -f "/home/src/bundles.info" ]]; then
+        echo "Ensuring bundles installed..."
+        cat /home/src/bundles.info >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+    fi
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded

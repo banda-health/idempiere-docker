@@ -1,0 +1,4 @@
+services:
+  idempiere:
+    image: openhmis/banda-idempiere:${IDEMPIERE_VERSION}
+    build: .
