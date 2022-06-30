@@ -20,7 +20,7 @@ services:
       - ${IDEMPIERE_SSL_PORT}:8443
       - ${TELNET_PORT}:12612
     healthcheck:
-      test: "[ ! -f \".unhealthy\" ] && exit 0 || exit 1"
+      test: "[ ! -f \"/opt/idempiere/.unhealthy\" ] && exit 0 || exit 1"
       interval: 1s
       timeout: 1s
       retries: 600
