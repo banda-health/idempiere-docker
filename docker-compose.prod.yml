@@ -1,7 +1,6 @@
 services:
   idempiere:
     image: openhmis/banda-idempiere:${IDEMPIERE_VERSION}
-    build: .
     depends_on:
       - postgres
     volumes:
@@ -12,7 +11,6 @@ services:
       - DB_HOST=${POSTGRES_HOST}
       - DB_NAME=${DB_NAME}
       - DB_PASS=${IDEMPIERE_DATABASE_PASSWORD}
-      - DB_PORT=${$POSTGRES_PORT}
       - IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB}
       - IDEMPIERE_VERSION=${IDEMPIERE_VERSION}
       - MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE}
