@@ -2,6 +2,8 @@
 
 set -Eeo pipefail
 
+cd $IDEMPIERE_HOME
+
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
