@@ -75,13 +75,13 @@ if [[ "$1" == "idempiere" ]]; then
     # If no DB exists or we want a fresh one, do it
     [ $IDEMPIERE_FRESH_DB == "true" ]
     willUseNewDb=$?
-    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1; then
+    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
         willUseNewDb=0
     fi
     wasBaseIdempiereDBUsed=1
     if (( willUseNewDb == 0 )); then
         # Delete the DB, if it's there
-        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
+        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1 ; then
             echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "drop database ${DB_NAME};"
         fi
@@ -89,11 +89,13 @@ if [[ "$1" == "idempiere" ]]; then
         cd utils
         # If a DB file was provided, we'll use that
         if [[ -f "/home/src/initial-db.dmp" ]]; then
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" 2>&1 > /dev/null
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;"
+            echo "Adding role if it doesn't exist..."
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" >/dev/null 2>&1
+            echo "Adding new DB..."
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;" >/dev/null 2>&1
             echo "Importing DB initialization file to database '$DB_NAME' with pg_restore version $(pg_restore --version)..."
             PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -p $DB_PORT -U postgres -Fc -j 8 -d $DB_NAME /home/src/initial-db.dmp
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" 2>&1 > /dev/null
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" >/dev/null 2>&1 
         else
             wasBaseIdempiereDBUsed=0
             echo "Importing new database '$DB_NAME'..."

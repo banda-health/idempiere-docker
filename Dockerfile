@@ -8,7 +8,6 @@ WORKDIR $IDEMPIERE_HOME
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nano postgresql-client && \
-    apt-get upgrade -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Install iDempiere
