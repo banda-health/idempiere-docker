@@ -30,6 +30,6 @@ services:
     image: postgres:12
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGPORT=${POSTGRES_PASSWORD}
+      - PGPORT=${POSTGRES_PORT}
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
