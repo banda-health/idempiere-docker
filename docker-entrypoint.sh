@@ -61,7 +61,7 @@ fi
 if [[ "$1" == "idempiere" ]]; then
     RETRIES=30
 
-    until PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -U postgres -c "\q" > /dev/null 2>&1 || [[ $RETRIES == 0 ]]; do
+    until PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "\q" > /dev/null 2>&1 || [[ $RETRIES == 0 ]]; do
         echo "Waiting for postgres server, $((RETRIES--)) remaining attempts..."
         sleep 1
     done
@@ -80,7 +80,7 @@ if [[ "$1" == "idempiere" ]]; then
     # If no DB exists or we want a fresh one, do it
     [ $IDEMPIERE_FRESH_DB == "true" ]
     willUseNewDb=$?
-    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1; then
+    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1; then
         willUseNewDb=0
     fi
     wasBaseIdempiereDBUsed=1
