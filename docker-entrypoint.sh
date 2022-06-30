@@ -33,11 +33,6 @@ MAIL_ADMIN=${MAIL_ADMIN:-info@idempiere}
 MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE:false}
 IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB:false}
 
-if [[ $DB_HOST == "postgres" ]]; then
-    echo "updating DB_PORT to be default 5432..."
-    DB_PORT=5432
-fi
-
 if [[ -n "$DB_PASS_FILE" ]]; then
     echo "DB_PASS_FILE set as $DB_PASS_FILE..."
     DB_PASS=$(cat $DB_PASS_FILE)
