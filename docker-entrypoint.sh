@@ -138,7 +138,7 @@ if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bu
     if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
         echo "Adding plugins to bundles.info..."
         ls /opt/idempiere/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,true/' | sed 's/\(.*test.*\),4,true/\1,4,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-    else if [[ -f "/home/src/bundles.info" ]]; then
+    elif [[ -f "/home/src/bundles.info" ]]; then
         echo "Ensuring bundles installed..."
         cat /home/src/bundles.info >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
     fi
