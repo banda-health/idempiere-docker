@@ -83,7 +83,7 @@ if [[ "$1" == "idempiere" ]]; then
         # Delete the DB, if it's there
         if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" > /dev/null 2>&1 ; then
             echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -U postgres -c "drop database ${DB_NAME};"
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "drop database ${DB_NAME};"
         fi
 
         cd utils
