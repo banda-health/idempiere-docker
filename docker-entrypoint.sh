@@ -7,6 +7,8 @@ cd $IDEMPIERE_HOME
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
+apt-get update && apt-get upgrade -y
+
 # Link the idempiere command to the server script
 ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
 

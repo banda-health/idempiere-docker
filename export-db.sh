@@ -8,5 +8,5 @@ fi
 
 echo "Using compose file $FILE..."
 
-docker compose -f $FILE exec -ti idempiere sh -c "PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h $POSTGRES_HOST -p $POSTGRES_PORT -U postgres -Fc $DB_NAME > idempiere-db.dmp"
+docker compose -f $FILE exec idempiere sh -c "PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h $POSTGRES_HOST -p $POSTGRES_PORT -U postgres -Fc $DB_NAME > idempiere-db.dmp"
 docker compose -f $FILE cp idempiere:idempiere-db.dmp idempiere-db.dmp
