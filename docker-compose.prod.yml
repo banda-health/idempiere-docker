@@ -2,8 +2,7 @@ services:
   idempiere:
     image: openhmis/banda-idempiere:${IDEMPIERE_VERSION}
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     volumes:
       - ./src:/home/src
     environment:
@@ -32,13 +31,5 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - PGPORT=${POSTGRES_PORT}
-
-      #this ENV variable is only required for the healthcheck section - if you don't specify it, the check command will fail stating the root user doesn't exist in posgres
-      - PGUSER=postgres
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 1s
-      timeout: 1s
-      retries: 25

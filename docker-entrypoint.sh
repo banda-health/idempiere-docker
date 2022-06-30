@@ -91,7 +91,7 @@ if [[ "$1" == "idempiere" ]]; then
         if [[ -f "/home/src/initial-db.dmp" ]]; then
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" 2>&1 > /dev/null
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;"
-            echo "Importing DB initialization file to database '$DB_NAME'..."
+            echo "Importing DB initialization file to database '$DB_NAME' with pg_restore version $(pg_restore --version)..."
             PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -p $DB_PORT -U postgres -Fc -j 8 -d $DB_NAME /home/src/initial-db.dmp
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" 2>&1 > /dev/null
         else
