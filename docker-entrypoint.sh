@@ -7,10 +7,8 @@ cd $IDEMPIERE_HOME
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
-apt-get update && apt-get upgrade -y
-
 # Link the idempiere command to the server script
-ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
+ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere > /dev/null 2>&1
 
 KEY_STORE_PASS=${KEY_STORE_PASS:-bandaHealth}
 KEY_STORE_ON=${KEY_STORE_ON:-bandahealth.org}
@@ -58,7 +56,7 @@ fi
 if [[ "$1" == "idempiere" ]]; then
     RETRIES=30
 
-    until PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "\q" > /dev/null 2>&1 || [[ $RETRIES == 0 ]]; do
+    until PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "\q" >/dev/null 2>&1 || [[ $RETRIES == 0 ]]; do
         echo "Waiting for postgres server, $((RETRIES--)) remaining attempts..."
         sleep 1
     done
@@ -75,15 +73,19 @@ if [[ "$1" == "idempiere" ]]; then
     echo -e "$JAVA_HOME\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
     # If no DB exists or we want a fresh one, do it
-    [ $IDEMPIERE_FRESH_DB == "true" ]
-    willUseNewDb=$?
-    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
+    echo "Checking if a new DB is needed..."
+    willUseNewDb=1
+    if [ $IDEMPIERE_FRESH_DB == "true" ]; then
+        if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
+            willUseNewDb=0
+        fi
+    else
         willUseNewDb=0
     fi
     wasBaseIdempiereDBUsed=1
-    if (( willUseNewDb == 0 )); then
+    if ((willUseNewDb == 0)); then
         # Delete the DB, if it's there
-        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1 ; then
+        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
             echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "drop database ${DB_NAME};"
         fi
@@ -97,7 +99,7 @@ if [[ "$1" == "idempiere" ]]; then
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;" >/dev/null 2>&1
             echo "Importing DB initialization file to database '$DB_NAME' with pg_restore version $(pg_restore --version)..."
             PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -p $DB_PORT -U postgres -Fc -j 8 -d $DB_NAME /home/src/initial-db.dmp
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" >/dev/null 2>&1 
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" >/dev/null 2>&1
         else
             wasBaseIdempiereDBUsed=0
             echo "Importing new database '$DB_NAME'..."
@@ -106,8 +108,10 @@ if [[ "$1" == "idempiere" ]]; then
         echo "Synchronizing database..."
         ./RUN_SyncDB.sh
         cd ..
+    else
+        echo "Did not create a new DB"
     fi
-    if (( wasBaseIdempiereDBUsed == 0 )) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
+    if ((wasBaseIdempiereDBUsed == 0)) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
         if [[ -d "/home/src/migration" ]]; then
             echo "Copying over Banda migration files..."
             cp -r /home/src/migration/* migration
@@ -119,10 +123,13 @@ if [[ "$1" == "idempiere" ]]; then
         cd ..
         echo "Signing database..."
         ./sign-database-build.sh
+    else
+        echo "Will use existing DB as-is..."
     fi
 
     # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
     if grep -q "Failed application of migration/" log/*; then
+        echo "Failed migration, so exiting..."
         exit 1
     fi
 fi
@@ -137,28 +144,44 @@ if [[ -d "/home/src/plugins" ]]; then
     cp -r /home/src/plugins/* /opt/idempiere/plugins
 fi
 
+# Copy the reports, if there are any
+if [[ -d "/home/src/reports" ]]; then
+    echo "Copying reports..."
+    cp -R /home/src/reports /opt/idempiere
+fi
+
+# Copy any data
+if [[ -d "/home/src/data" ]]; then
+    echo "Copying data..."
+    cp -R /home/src/data /opt/idempiere
+fi
+
 # Generate bundle info, if need be
+rm /tmp/bundles > /dev/null 2>&1 || true
 if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
     if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
         # Only add the plugins if there are any
         if [ -n "$(ls -A /home/src/plugins 2>/dev/null)" ]; then
             echo "Adding plugins to bundles.info..."
-            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,true/' | sed 's/\(.*test.*\),4,true/\1,4,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,true/' | sed 's/\(.*test.*\),4,true/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            echo "Creating commands to check plugin activity..."
+            touch /tmp/bundles
+            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > /tmp/bundles
+            echo "sleep 1" >> /tmp/bundles
         else
             echo "No plugins to start"
         fi
     elif [[ -f "/home/src/bundles.info" ]]; then
         echo "Ensuring bundles installed..."
-        cat /home/src/bundles.info >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+        cat /home/src/bundles.info >>/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+    else
+        echo "No plugins to auto-start..."
     fi
+else
+    echo "No iDempiere bundles config found..."
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded
 rm ./.unhealthy
 
 exec "$@"
-
-# If we're in our CI pipeline, don't stop the container - the pipeline will close it at the right time
-if [[ $CI == "true" ]]; then
-    sleep infinity
-fi
