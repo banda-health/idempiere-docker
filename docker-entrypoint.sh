@@ -8,7 +8,9 @@ cd $IDEMPIERE_HOME
 touch ./.unhealthy
 
 # Link the idempiere command to the server script
-ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere > /dev/null 2>&1
+if [[ ! -f "/usr/bin/idempiere" ]]; then
+    ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere > /dev/null 2>&1
+fi
 
 KEY_STORE_PASS=${KEY_STORE_PASS:-bandaHealth}
 KEY_STORE_ON=${KEY_STORE_ON:-bandahealth.org}
@@ -79,15 +81,13 @@ if [[ "$1" == "idempiere" ]]; then
         if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
             willUseNewDb=0
         fi
-    else
-        willUseNewDb=0
     fi
     wasBaseIdempiereDBUsed=1
     if ((willUseNewDb == 0)); then
         # Delete the DB, if it's there
         if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
             echo "Database '$DB_NAME' is found. Dropping it so there is a fresh instance..."
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "drop database ${DB_NAME};"
+            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "drop database \"${DB_NAME}\";"
         fi
 
         cd utils
@@ -139,9 +139,15 @@ echo "Applying 2-packs..."
 ./utils/RUN_ApplyPackInFromFolder.sh migration
 
 # Copy the plugins to the plugin directory, if there are any
-if [[ -d "/home/src/plugins" ]]; then
+rm /tmp/bundles > /dev/null 2>&1 || true
+if [[ -d "/home/src/plugins" ]] && [[ $(ls /home/src/plugins | wc -l) > 0 ]]; then
     echo "Copying plugins..."
     cp -r /home/src/plugins/* /opt/idempiere/plugins
+    # Create commands to run through telnet so we can make sure all plugins are active or resolved!
+    echo "Creating commands to check plugin activity..."
+    touch /tmp/bundles
+    ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > /tmp/bundles
+    echo "sleep 1" >> /tmp/bundles
 fi
 
 # Copy the reports, if there are any
@@ -157,17 +163,14 @@ if [[ -d "/home/src/data" ]]; then
 fi
 
 # Generate bundle info, if need be
-rm /tmp/bundles > /dev/null 2>&1 || true
 if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
-    if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
+    if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]] && [[ -d "/home/src/plugins" ]]; then
         # Only add the plugins if there are any
         if [ -n "$(ls -A /home/src/plugins 2>/dev/null)" ]; then
             echo "Adding plugins to bundles.info..."
-            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,true/' | sed 's/\(.*test.*\),4,true/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-            echo "Creating commands to check plugin activity..."
-            touch /tmp/bundles
-            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > /tmp/bundles
-            echo "sleep 1" >> /tmp/bundles
+            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            # Make sure the "rest" plugin is set to auto-start
+            sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
         else
             echo "No plugins to start"
         fi
