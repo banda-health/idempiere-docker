@@ -71,15 +71,21 @@ if [[ "$1" == "idempiere" ]]; then
     echo "Removing default settings..."
     rm -f idempiereEnv.properties jettyhome/etc/keystore
 
+    echo "Adding DB role if it doesn't exist..."
+    if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
+        PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" >/dev/null 2>&1
+    fi
+
     echo "Executing console-setup..."
     echo -e "$JAVA_HOME\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
     # If no DB exists or we want a fresh one, do it
     echo "Checking if a new DB is needed..."
-    willUseNewDb=1
-    if [ $IDEMPIERE_FRESH_DB == "true" ]; then
-        if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
-            willUseNewDb=0
+    willUseNewDb=0
+    # If we don't want to use a new DB and one exists, we'll not recreate the DB
+    if [ $IDEMPIERE_FRESH_DB != "true" ]; then
+        if PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
+            willUseNewDb=1
         fi
     fi
     wasBaseIdempiereDBUsed=1
@@ -93,8 +99,6 @@ if [[ "$1" == "idempiere" ]]; then
         cd utils
         # If a DB file was provided, we'll use that
         if [[ -f "/home/src/initial-db.dmp" ]]; then
-            echo "Adding role if it doesn't exist..."
-            PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" >/dev/null 2>&1
             echo "Adding new DB..."
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;" >/dev/null 2>&1
             echo "Importing DB initialization file to database '$DB_NAME' with pg_restore version $(pg_restore --version)..."
