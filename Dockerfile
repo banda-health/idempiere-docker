@@ -1,14 +1,10 @@
-FROM openjdk:11-jdk
+FROM openjdk:11-jdk AS builder
 
 ENV IDEMPIERE_HOME /opt/idempiere
 ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins
 ENV IDEMPIERE_LOGS_HOME $IDEMPIERE_HOME/log
 
 WORKDIR $IDEMPIERE_HOME
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends nano postgresql-client telnet && \
-    rm -rf /var/lib/apt/lists/*
 
 # Install iDempiere
 COPY idempiere/idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere/
@@ -19,8 +15,21 @@ RUN tar -zxf /tmp/idempiere/idempiere.build.gtk.linux.x86_64.tar.gz --directory 
 # Copy over shell script
 COPY idempiere-server.sh .
 
-# Now set the entrypoint
+FROM openjdk:11-jdk AS idempiere
 WORKDIR /
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nano postgresql-client telnet && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV IDEMPIERE_HOME /opt/idempiere
+ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins
+ENV IDEMPIERE_LOGS_HOME $IDEMPIERE_HOME/log
+
+# Copy over iDempiere files
+COPY --from=builder $IDEMPIERE_HOME $IDEMPIERE_HOME
+
+# Now set the entrypoint
 COPY docker-entrypoint.sh .
 COPY health-check.sh .
 

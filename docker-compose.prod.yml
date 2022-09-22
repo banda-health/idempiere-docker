@@ -1,6 +1,9 @@
 services:
   idempiere:
     image: openhmis/banda-idempiere:${IDEMPIERE_VERSION}
+    build:
+      context: ./
+      target: idempiere
     depends_on:
       - postgres
     volumes:
