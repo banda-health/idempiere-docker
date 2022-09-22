@@ -143,6 +143,10 @@ fi
 echo "Applying 2-packs..."
 ./utils/RUN_ApplyPackInFromFolder.sh migration
 
+if [[ "$2" == "isntall-sources" ]]; then
+    ./install-sources.sh
+fi
+
 # remove the unhealthy file so Docker health check knows everything succeeded
 rm ./.unhealthy
 

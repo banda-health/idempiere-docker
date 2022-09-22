@@ -37,4 +37,4 @@ COPY install-sources.sh .
 # Set the entrypoint & commands
 HEALTHCHECK --interval=5s --timeout=5s --retries=100 --start-period=5s CMD /health-check.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["./install-sources.sh", "idempiere"]
+CMD ["idempiere", "install-sources"]
