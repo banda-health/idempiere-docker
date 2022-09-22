@@ -32,8 +32,9 @@ COPY --from=builder $IDEMPIERE_HOME $IDEMPIERE_HOME
 # Now set the entrypoint
 COPY docker-entrypoint.sh .
 COPY health-check.sh .
+COPY install-sources.sh .
 
 # Set the entrypoint & commands
 HEALTHCHECK --interval=5s --timeout=5s --retries=100 --start-period=5s CMD /health-check.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["idempiere"]
+CMD ["./install-sources.sh", "idempiere"]
