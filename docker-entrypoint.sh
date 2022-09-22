@@ -32,8 +32,9 @@ MAIL_HOST=${MAIL_HOST:-0.0.0.0}
 MAIL_USER=${MAIL_USER:-info}
 MAIL_PASS=${MAIL_PASS:-info}
 MAIL_ADMIN=${MAIL_ADMIN:-info@idempiere}
-MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE:false}
-IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB:false}
+MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE:-false}
+IDEMPIERE_FRESH_DB=${IDEMPIERE_FRESH_DB:-false}
+REMOVE_SOURCES_AFTER_COPY=${REMOVE_SOURCES_AFTER_COPY:-false}
 
 if [[ -n "$DB_PASS_FILE" ]]; then
     echo "DB_PASS_FILE set as $DB_PASS_FILE..."
@@ -152,40 +153,56 @@ if [[ -d "/home/src/plugins" ]] && [[ $(ls /home/src/plugins | wc -l) > 0 ]]; th
     touch /tmp/bundles
     ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > /tmp/bundles
     echo "sleep 1" >> /tmp/bundles
+    
+
+    # Generate bundle info, if need be
+    if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
+        if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
+            # Only add the plugins if there are any
+            if [ -n "$(ls -A /home/src/plugins 2>/dev/null)" ]; then
+                echo "Adding plugins to bundles.info..."
+                ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+                # Make sure the "rest" plugin is set to auto-start
+                sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            else
+                echo "No plugins to start"
+            fi
+        elif [[ -f "/home/src/bundles.info" ]]; then
+            echo "Ensuring bundles installed..."
+            cat /home/src/bundles.info >>/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+        else
+            echo "No plugins to auto-start..."
+        fi
+    else
+        echo "No iDempiere bundles config found..."
+    fi
+
+    if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
+        echo "Removing source plugins after copy..."
+        rm -r /home/src/plugins/*
+    fi
 fi
 
 # Copy the reports, if there are any
 if [[ -d "/home/src/reports" ]]; then
     echo "Copying reports..."
     cp -R /home/src/reports /opt/idempiere
+
+    if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
+        echo "Removing source reports after copy..."
+        rm -r /home/src/reports/*
+    fi
 fi
 
 # Copy any data
 if [[ -d "/home/src/data" ]]; then
     echo "Copying data..."
     cp -R /home/src/data /opt/idempiere
-fi
 
-# Generate bundle info, if need be
-if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
-    if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]] && [[ -d "/home/src/plugins" ]]; then
-        # Only add the plugins if there are any
-        if [ -n "$(ls -A /home/src/plugins 2>/dev/null)" ]; then
-            echo "Adding plugins to bundles.info..."
-            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-            # Make sure the "rest" plugin is set to auto-start
-            sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-        else
-            echo "No plugins to start"
-        fi
-    elif [[ -f "/home/src/bundles.info" ]]; then
-        echo "Ensuring bundles installed..."
-        cat /home/src/bundles.info >>/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-    else
-        echo "No plugins to auto-start..."
+    if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
+        echo "Removing source data after copy..."
+        rm -r /home/src/data/*
     fi
-else
-    echo "No iDempiere bundles config found..."
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded
