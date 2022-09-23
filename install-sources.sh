@@ -3,12 +3,13 @@
 echo "Installing sources..."
 
 # Copy the plugins to the plugin directory, if there are any
-rm -f "$IDEMPIERE_HOME/banda/bundles"
+rm -f "$IDEMPIERE_HOME/banda"
 if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls $INSTALLATION_HOME/plugins | wc -l) > 0 ]]; then
     echo "Copying plugins..."
     cp -r "$INSTALLATION_HOME/plugins/*" "$IDEMPIERE_HOME/plugins"
     # Create commands to run through telnet so we can make sure all plugins are active or resolved!
     echo "Creating commands to check plugin activity..."
+    mkdir "$IDEMPIERE_HOME/banda"
     touch "$IDEMPIERE_HOME/banda/bundles"
     ls "$INSTALLATION_HOME/plugins" | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > "$IDEMPIERE_HOME/banda/bundles"
     echo "sleep 1" >> "$IDEMPIERE_HOME/banda/bundles"
