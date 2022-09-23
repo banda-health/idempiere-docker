@@ -7,7 +7,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./src:/home/src
+      - ./src:${INSTALLATION_HOME}
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_HOST=${POSTGRES_HOST}
@@ -19,6 +19,7 @@ services:
       - MIGRATE_EXISTING_DATABASE=${MIGRATE_EXISTING_DATABASE}
       - GENERATE_PLUGIN_BUNDLE_INFO=${GENERATE_PLUGIN_BUNDLE_INFO}
       - HEALTHY_AFTER_PLUGINS_START=${HEALTHY_AFTER_PLUGINS_START}
+      - INSTALLATION_HOME=${INSTALLATION_HOME}
     ports:
       - ${IDEMPIERE_PORT}:8080
       - ${IDEMPIERE_SSL_PORT}:8443

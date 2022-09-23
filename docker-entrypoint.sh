@@ -99,11 +99,11 @@ if [[ "$1" == "idempiere" ]]; then
 
         cd utils
         # If a DB file was provided, we'll use that
-        if [[ -f "/home/src/initial-db.dmp" ]]; then
+        if [[ -f "$INSTALLATION_HOME/initial-db.dmp" ]]; then
             echo "Adding new DB..."
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "create database ${DB_NAME} owner adempiere;" >/dev/null 2>&1
             echo "Importing DB initialization file to database '$DB_NAME' with pg_restore version $(pg_restore --version)..."
-            PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -p $DB_PORT -U postgres -Fc -j 8 -d $DB_NAME /home/src/initial-db.dmp
+            PGPASSWORD=$DB_ADMIN_PASS pg_restore -h $DB_HOST -p $DB_PORT -U postgres -Fc -j 8 -d $DB_NAME "$INSTALLATION_HOME/initial-db.dmp"
             PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "ALTER ROLE adempiere SET search_path TO adempiere, pg_catalog;" >/dev/null 2>&1
         else
             wasBaseIdempiereDBUsed=0
@@ -117,12 +117,12 @@ if [[ "$1" == "idempiere" ]]; then
         echo "Did not create a new DB"
     fi
     if ((wasBaseIdempiereDBUsed == 0)) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
-        if [[ -d "/home/src/migration" ]]; then
+        if [[ -d "$INSTALLATION_HOME/migration" ]]; then
             echo "Incrementally syncing files..."
-            /install-migrations-incrementally.sh /home/src/migration
+            /install-migrations-incrementally.sh "$INSTALLATION_HOME/migration"
             if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
                 echo "Removing source migrations after copy..."
-                rm -r /home/src/migration/*
+                rm -r "$INSTALLATION_HOME/migration/*"
             fi
         fi
 

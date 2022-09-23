@@ -3,26 +3,26 @@
 echo "Installing sources..."
 
 # Copy the plugins to the plugin directory, if there are any
-rm /tmp/bundles > /dev/null 2>&1 || true
-if [[ -d "/home/src/plugins" ]] && [[ $(ls /home/src/plugins | wc -l) > 0 ]]; then
+rm -f "$IDEMPIERE_HOME/banda/bundles"
+if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls $INSTALLATION_HOME/plugins | wc -l) > 0 ]]; then
     echo "Copying plugins..."
-    cp -r /home/src/plugins/* /opt/idempiere/plugins
+    cp -r "$INSTALLATION_HOME/plugins/*" "$IDEMPIERE_HOME/plugins"
     # Create commands to run through telnet so we can make sure all plugins are active or resolved!
     echo "Creating commands to check plugin activity..."
-    touch /tmp/bundles
-    ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > /tmp/bundles
-    echo "sleep 1" >> /tmp/bundles
+    touch "$IDEMPIERE_HOME/banda/bundles"
+    ls "$INSTALLATION_HOME/plugins" | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/echo ss \1/' > "$IDEMPIERE_HOME/banda/bundles"
+    echo "sleep 1" >> "$IDEMPIERE_HOME/banda/bundles"
 
     # Generate bundle info, if need be
-    if [[ -f "/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
+    if [[ -f "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info" ]]; then
         if [[ $GENERATE_PLUGIN_BUNDLE_INFO == "true" ]]; then
             echo "Adding plugins to bundles.info..."
-            ls /home/src/plugins | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            ls "$INSTALLATION_HOME/plugins" | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
             # Make sure the "rest" plugin is set to auto-start
-            sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' /opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
-        elif [[ -f "/home/src/bundles.info" ]]; then
+            sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
+        elif [[ -f "$INSTALLATION_HOME/bundles.info" ]]; then
             echo "Ensuring bundles installed..."
-            cat /home/src/bundles.info >>/opt/idempiere/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info
+            cat "$INSTALLATION_HOME/bundles.info" >>"$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
         else
             echo "No plugins to auto-start..."
         fi
@@ -32,29 +32,29 @@ if [[ -d "/home/src/plugins" ]] && [[ $(ls /home/src/plugins | wc -l) > 0 ]]; th
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source plugins after copy..."
-        rm -r /home/src/plugins/*
+        rm -r "$INSTALLATION_HOME/plugins/*"
     fi
 fi
 
 # Copy the reports, if there are any
-if [[ -d "/home/src/reports" ]]; then
+if [[ -d "$INSTALLATION_HOME/reports" ]]; then
     echo "Copying reports..."
-    cp -R /home/src/reports /opt/idempiere
+    cp -R "$INSTALLATION_HOME/reports" "$IDEMPIERE_HOME"
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source reports after copy..."
-        rm -r /home/src/reports/*
+        rm -r "$INSTALLATION_HOME/reports/*"
     fi
 fi
 
 # Copy any data
-if [[ -d "/home/src/data" ]]; then
+if [[ -d "$INSTALLATION_HOME/data" ]]; then
     echo "Copying data..."
-    cp -R /home/src/data /opt/idempiere
+    cp -R "$INSTALLATION_HOME/data" "$IDEMPIERE_HOME"
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source data after copy..."
-        rm -r /home/src/data/*
+        rm -fr "$INSTALLATION_HOME/data"
     fi
 fi
 
