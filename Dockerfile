@@ -33,6 +33,7 @@ COPY --from=builder $IDEMPIERE_HOME $IDEMPIERE_HOME
 COPY docker-entrypoint.sh .
 COPY health-check.sh .
 COPY install-sources.sh .
+COPY install-migrations-incrementally.sh .
 
 # Set the entrypoint & commands
 HEALTHCHECK --interval=5s --timeout=5s --retries=100 --start-period=5s CMD /health-check.sh

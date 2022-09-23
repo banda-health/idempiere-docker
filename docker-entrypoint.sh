@@ -118,8 +118,12 @@ if [[ "$1" == "idempiere" ]]; then
     fi
     if ((wasBaseIdempiereDBUsed == 0)) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
         if [[ -d "/home/src/migration" ]]; then
-            echo "Copying over Banda migration files..."
-            cp -r /home/src/migration/* migration
+            echo "Incrementally syncing files..."
+            /install-migrations-incrementally.sh /home/src/migration
+            if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
+                echo "Removing source migrations after copy..."
+                rm -r /home/src/migration/*
+            fi
         fi
 
         cd utils
@@ -137,14 +141,14 @@ if [[ "$1" == "idempiere" ]]; then
         echo "Failed migration, so exiting..."
         exit 1
     fi
-fi
 
-# Run the 2-packs, if there are any
-echo "Applying 2-packs..."
-./utils/RUN_ApplyPackInFromFolder.sh migration
+    if [[ "$2" == "install-sources" ]]; then
+        /install-sources.sh
+    fi
 
-if [[ "$2" == "isntall-sources" ]]; then
-    ./install-sources.sh
+    # Run the 2-packs, if there are any
+    echo "Applying 2-packs..."
+    ./utils/RUN_ApplyPackInFromFolder.sh migration
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded
