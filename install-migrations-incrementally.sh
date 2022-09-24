@@ -49,6 +49,9 @@ rm -f "$migration_order_file"
 touch "$migration_order_file"
 ls "$temp_migration_folder" | sort >"$migration_order_file"
 
+# To avoid a long-running terminology syncing, we'll remove it from intermediate migrations
+mv "$IDEMPIERE_HOME/migration/processes_post_migration/postgresql/02_SynchronizeTerminology.sql" "$IDEMPIERE_HOME/migration/processes_post_migration/postgresql/02_SynchronizeTerminology.txt" 2>/dev/null
+
 # Perform a loop to incrementally move things to the migration folder and run them
 current_migration_file=/tmp/bh-current-migration-sequence.txt
 rm -f "$current_migration_file"
@@ -78,6 +81,9 @@ while IFS= read -r line; do
   # If this line is a zip, set our variable
   grep -q -i ".zip" <<<"$line" && was_last_line_zip=true || was_last_line_zip=false
 done <"$migration_order_file"
+
+# Undo the terminology syncing file rename
+mv "$IDEMPIERE_HOME/migration/processes_post_migration/postgresql/02_SynchronizeTerminology.txt" "$IDEMPIERE_HOME/migration/processes_post_migration/postgresql/02_SynchronizeTerminology.sql" 2>/dev/null
 
 # Now move everything to the migration folder and run everything one last time
 echo "Copying over Banda migration files..."
