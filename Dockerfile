@@ -36,6 +36,6 @@ COPY install-sources.sh .
 COPY install-migrations-incrementally.sh .
 
 # Set the entrypoint & commands
-HEALTHCHECK --interval=5s --timeout=5s --retries=100 --start-period=5s CMD /health-check.sh
+HEALTHCHECK --interval=5s --timeout=5s --retries=200 --start-period=5s CMD /health-check.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["idempiere", "install-sources"]
