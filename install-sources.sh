@@ -3,8 +3,8 @@
 echo "Installing sources..."
 
 # Copy the plugins to the plugin directory, if there are any
-rm -f "$IDEMPIERE_HOME/banda"
-if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls $INSTALLATION_HOME/plugins | wc -l) > 0 ]]; then
+rm -rf "$IDEMPIERE_HOME/banda"
+if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls "$INSTALLATION_HOME/plugins" | wc -l) > 0 ]]; then
     echo "Copying plugins..."
     cp -r "$INSTALLATION_HOME/plugins/." "$IDEMPIERE_HOME/plugins"
     # Create commands to run through telnet so we can make sure all plugins are active or resolved!
@@ -33,7 +33,7 @@ if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls $INSTALLATION_HOME/plugins |
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source plugins after copy..."
-        rm -r "$INSTALLATION_HOME/plugins/."
+        rm -fr "$INSTALLATION_HOME/plugins"
     fi
 fi
 
@@ -44,7 +44,7 @@ if [[ -d "$INSTALLATION_HOME/reports" ]]; then
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source reports after copy..."
-        rm -r "$INSTALLATION_HOME/reports/."
+        rm -rf "$INSTALLATION_HOME/reports"
     fi
 fi
 

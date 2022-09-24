@@ -34,6 +34,9 @@ if [[ ! -d "$1" ]]; then
   exit
 fi
 
+mkdir -p "$IDEMPIERE_HOME/migration/local_sql/postgresql"
+mkdir -p "$IDEMPIERE_HOME/migration/zip_2pack"
+
 # Put the files in a single, temporary location
 temp_migration_folder=/tmp/bh-migration
 rm -rf "$temp_migration_folder"
@@ -78,7 +81,7 @@ done <"$migration_order_file"
 
 # Now move everything to the migration folder and run everything one last time
 echo "Copying over Banda migration files..."
-cp -r "$1" "$IDEMPIERE_HOME/migration"
+cp -r "$1/." "$IDEMPIERE_HOME/migration"
 
 echo "Running final migration, number $migration_count..."
 migrate
