@@ -27,12 +27,18 @@ migrate() {
   "$IDEMPIERE_HOME/utils/RUN_SyncDB.sh"
 
   # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-  if grep -qr "Failed application of migration/" "$IDEMPIERE_HOME/log"; then
+  if grep -qr "ERROR ON FILE" "$IDEMPIERE_HOME/log"; then
       echo "Failed migration, so exiting..."
       exit 1
   fi
 
   "$IDEMPIERE_HOME/utils/RUN_ApplyPackInFromFolder.sh" "$IDEMPIERE_HOME/migration"
+
+  # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
+  if grep -qr "Failed application of" "$IDEMPIERE_HOME/log"; then
+      echo "Failed applying 2-packs, so exiting..."
+      exit 1
+  fi
 }
 
 # If there are no files, then exit
