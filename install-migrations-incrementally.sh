@@ -27,7 +27,7 @@ migrate() {
   "$IDEMPIERE_HOME/utils/RUN_SyncDB.sh"
 
   # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-  if grep -q "Failed application of migration/" "$IDEMPIERE_HOME/log"; then
+  if grep -qr "Failed application of migration/" "$IDEMPIERE_HOME/log"; then
       echo "Failed migration, so exiting..."
       exit 1
   fi
