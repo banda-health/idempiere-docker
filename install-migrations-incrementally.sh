@@ -24,13 +24,7 @@ fi
 
 migrate() {
   echo "Running incremental migration..."
-  "$IDEMPIERE_HOME/utils/RUN_SyncDB.sh"
-
-  # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-  if grep -qr "ERROR ON FILE" "$IDEMPIERE_HOME/log"; then
-      echo "Failed migration, so exiting..."
-      exit 1
-  fi
+  "$IDEMPIERE_HOME/utils/RUN_SyncDB.sh" || exit 1
 
   "$IDEMPIERE_HOME/utils/RUN_ApplyPackInFromFolder.sh" "$IDEMPIERE_HOME/migration"
 
@@ -103,7 +97,7 @@ echo "Copying over Banda migration files..."
 cp -r "$1/." "$IDEMPIERE_HOME/migration"
 
 echo "Running final migration, number $migration_count..."
-migrate
+migrate || exit 1
 
 rm -f "$migration_order_file"
 rm -f "$temp_migration_folder"
