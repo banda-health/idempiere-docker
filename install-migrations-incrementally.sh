@@ -25,6 +25,13 @@ fi
 migrate() {
   echo "Running incremental migration..."
   "$IDEMPIERE_HOME/utils/RUN_SyncDB.sh"
+
+  # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
+  if grep -q "Failed application of migration/" "$IDEMPIERE_HOME/log"; then
+      echo "Failed migration, so exiting..."
+      exit 1
+  fi
+
   "$IDEMPIERE_HOME/utils/RUN_ApplyPackInFromFolder.sh" "$IDEMPIERE_HOME/migration"
 }
 
@@ -72,7 +79,7 @@ while IFS= read -r line; do
     cat "$current_migration_file" | grep -i ".zip" | xargs -i cp "$temp_migration_folder/{}" "$IDEMPIERE_HOME/migration/zip_2pack"
     echo "Migrating count: $migration_count"
     ((migration_count = migration_count + 1))
-    migrate
+    migrate || exit 1
     ready_to_migrate=false
     rm -f "$current_migration_file"
     touch "$current_migration_file"

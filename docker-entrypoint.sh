@@ -119,7 +119,7 @@ if [[ "$1" == "idempiere" ]]; then
     if ((wasBaseIdempiereDBUsed == 0)) || [[ $MIGRATE_EXISTING_DATABASE == "true" ]]; then
         if [[ -d "$INSTALLATION_HOME/migration" ]]; then
             echo "Incrementally syncing files..."
-            /install-migrations-incrementally.sh "$INSTALLATION_HOME/migration"
+            /install-migrations-incrementally.sh "$INSTALLATION_HOME/migration" || exit 1
             if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
                 echo "Removing source migrations after copy..."
                 rm -r "$INSTALLATION_HOME/migration/."
@@ -134,12 +134,6 @@ if [[ "$1" == "idempiere" ]]; then
         ./sign-database-build.sh
     else
         echo "Will use existing DB as-is..."
-    fi
-
-    # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-    if grep -q "Failed application of migration/" log/*; then
-        echo "Failed migration, so exiting..."
-        exit 1
     fi
 
     if [[ "$2" == "install-sources" ]]; then
