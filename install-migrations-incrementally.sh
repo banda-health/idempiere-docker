@@ -50,6 +50,13 @@ rm -rf "$temp_migration_folder"
 mkdir "$temp_migration_folder"
 find "$1" -type f \( -name "*.sql" -o -name "*.zip" \) -not -path "*/processes_*" -exec cp "{}" "$temp_migration_folder" \;
 
+# Remove SQL files that have already been run in the DB
+PGPASSWORD=$DB_PASS
+export PGPASSWORD
+CMD="psql -h $DB_HOST -p $DB_PORT -d $DB_NAME -U $DB_USER -b"
+SILENTCMD="$CMD -q -t"
+echo "select name from ad_migrationscript" | $SILENTCMD | sed -e 's:^ ::' | grep -v '^$' | sort | xargs rm -rf "$temp_migration_folder/{}"
+
 # Sort the SQL & 2-packs by date
 migration_order_file=/tmp/bh-migration-sequence
 rm -f "$migration_order_file"
