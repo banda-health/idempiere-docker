@@ -140,10 +140,6 @@ if [[ "$1" == "idempiere" ]]; then
     if [[ "$2" == "install-sources" ]]; then
         /install-sources.sh
     fi
-
-    # Run the 2-packs, if there are any
-    echo "Applying 2-packs..."
-    ./utils/RUN_ApplyPackInFromFolder.sh migration
 fi
 
 # remove the unhealthy file so Docker health check knows everything succeeded
