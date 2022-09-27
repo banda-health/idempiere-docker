@@ -123,7 +123,7 @@ if [[ "$1" == "idempiere" ]]; then
             /install-migrations-incrementally.sh "$INSTALLATION_HOME/migration" || exit 1
             if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
                 echo "Removing source migrations after copy..."
-                rm -r "$INSTALLATION_HOME/migration/."
+                rm -rf $INSTALLATION_HOME/migration/*
             fi
         fi
 
