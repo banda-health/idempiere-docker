@@ -100,6 +100,6 @@ echo "Running final migration, number $migration_count..."
 migrate || exit 1
 
 rm -f "$migration_order_file"
-rm -f "$temp_migration_folder"
+rm -rf "$temp_migration_folder"
 rm -f "$current_migration_file"
 echo "Incremental migration completed!"
