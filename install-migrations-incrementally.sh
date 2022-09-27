@@ -35,6 +35,11 @@ migrate() {
   fi
 }
 
+DB_HOST=${DB_HOST:-postgres}
+DB_PORT=${DB_PORT:-5432}
+DB_NAME=${DB_NAME:-idempiere}
+DB_USER=${DB_USER:-adempiere}
+
 # If there are no files, then exit
 if [[ ! -d "$1" ]]; then
   echo "No migration files in specified directory $1, so exiting..."
@@ -55,7 +60,7 @@ PGPASSWORD=$DB_PASS
 export PGPASSWORD
 CMD="psql -h $DB_HOST -p $DB_PORT -d $DB_NAME -U $DB_USER -b"
 SILENTCMD="$CMD -q -t"
-echo "select name from ad_migrationscript" | $SILENTCMD | sed -e 's:^ ::' | grep -v '^$' | sort | xargs rm -rf "$temp_migration_folder/{}"
+echo "select name from ad_migrationscript" | $SILENTCMD | sed -e 's:^ ::' | grep -v '^$' | sort | awk -v temp_migration_folder="$temp_migration_folder" '{print temp_migration_folder"/"$1}' | xargs rm -f
 
 # Sort the SQL & 2-packs by date
 migration_order_file=/tmp/bh-migration-sequence
