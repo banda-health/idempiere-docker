@@ -29,7 +29,7 @@ migrate() {
   "$IDEMPIERE_HOME/utils/RUN_ApplyPackInFromFolder.sh" "$IDEMPIERE_HOME/migration"
 
   # if there were any errors in the DB sync or pack-in migration, we need to throw an error here
-  if grep -qr "Failed application of" "$IDEMPIERE_HOME/log"; then
+  if grep "Failed application of" "$(ls -1rt $IDEMPIERE_HOME/log | tail -n1)"; then
       echo "Failed applying 2-packs, so exiting..."
       exit 1
   fi
