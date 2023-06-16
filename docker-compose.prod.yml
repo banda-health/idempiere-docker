@@ -1,6 +1,6 @@
 services:
   idempiere:
-    image: openhmis/banda-idempiere:${IDEMPIERE_VERSION}
+    image: ghcr.io/banda-health/banda-idempiere:${IDEMPIERE_VERSION}
     depends_on:
       - postgres
     volumes:
