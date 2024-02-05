@@ -75,7 +75,7 @@ if [[ "$1" == "idempiere" ]]; then
 
     echo "Adding DB role if it doesn't exist..."
     if ! PGPASSWORD=$DB_PASS psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "\q" >/dev/null 2>&1; then
-        PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere login password '$DB_PASS';" >/dev/null 2>&1
+        PGPASSWORD=$DB_ADMIN_PASS psql -h $DB_HOST -p $DB_PORT -U postgres -c "CREATE ROLE adempiere SUPERUSER LOGIN PASSWORD '$DB_PASS';" >/dev/null 2>&1
     fi
 
     echo "Executing console-setup..."
