@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk AS builder
+FROM eclipse-temurin:17-jdk AS builder
 
 ENV IDEMPIERE_HOME /opt/idempiere
 ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins
@@ -15,7 +15,7 @@ RUN tar -zxf /tmp/idempiere/idempiere.build.gtk.linux.x86_64.tar.gz --directory 
 # Copy over shell script
 COPY idempiere-server.sh .
 
-FROM openjdk:17-jdk AS idempiere
+FROM eclipse-temurin:17-jdk AS idempiere
 WORKDIR /
 
 RUN apt-get update && \
