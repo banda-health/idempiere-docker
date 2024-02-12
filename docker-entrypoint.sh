@@ -12,6 +12,7 @@ if [[ ! -f "/usr/bin/idempiere" ]]; then
     ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere > /dev/null 2>&1
 fi
 
+JAVA_OPTIONS=${JAVA_OPTIONS:-${JAVA_OPTIONS:[]}}
 KEY_STORE_PASS=${KEY_STORE_PASS:-bandaHealth}
 KEY_STORE_ON=${KEY_STORE_ON:-bandahealth.org}
 KEY_STORE_OU=${KEY_STORE_OU:-Banda iDempiere Docker}
@@ -79,7 +80,7 @@ if [[ "$1" == "idempiere" ]]; then
     fi
 
     echo "Executing console-setup..."
-    echo -e "$JAVA_HOME\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
+    echo -e "$JAVA_HOME\n$JAVA_OPTIONS\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
     # If no DB exists or we want a fresh one, do it
     echo "Checking if a new DB is needed..."
