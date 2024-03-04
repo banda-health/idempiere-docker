@@ -18,6 +18,10 @@ COPY idempiere-server.sh .
 FROM eclipse-temurin:17-jdk AS idempiere
 WORKDIR /
 
+# Handle Postgresql APT repository updates
+RUN sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nano postgresql-client telnet && \
     rm -rf /var/lib/apt/lists/*
