@@ -112,8 +112,6 @@ if [[ "$1" == "idempiere" ]]; then
             echo "Importing new database '$DB_NAME'..."
             ./RUN_ImportIdempiere.sh
         fi
-        echo "Synchronizing database..."
-        ./RUN_SyncDB.sh
         cd ..
     else
         echo "Did not create a new DB"
