@@ -125,7 +125,7 @@ if [[ "$1" == "idempiere" ]]; then
             #     rm -rf $INSTALLATION_HOME/migration/*
             # fi
             echo "Moving files..."
-            cp "$INSTALLATION_HOME/migration/." "$IDEMPIERE_HOME/migration"
+            cp -r "$INSTALLATION_HOME/migration/." "$IDEMPIERE_HOME/migration/"
         fi
 
         cd utils
