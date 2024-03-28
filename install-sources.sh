@@ -21,6 +21,8 @@ if [[ -d "$INSTALLATION_HOME/plugins" ]] && [[ $(ls "$INSTALLATION_HOME/plugins"
             ls "$INSTALLATION_HOME/plugins" | sed 's/\(.*\)\(-..\?\...\?\...\?-SNAPSHOT\.jar\)/\1,1.0.0,plugins\/\1\2,4,false/' | sed 's/\(.*test.*\),4,false/\1,5,true/' >> "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
             # Make sure the "rest" plugin is set to auto-start
             sed -i 's/\(banda.*rest,.*\)4,false/\14,true/' "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
+            # Make sure the "graphql" plugin is set to auto-start
+            sed -i 's/\(banda.*graphql,.*\)4,false/\14,true/' "$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"
         elif [[ -f "$INSTALLATION_HOME/bundles.info" ]]; then
             echo "Ensuring bundles installed..."
             cat "$INSTALLATION_HOME/bundles.info" >>"$IDEMPIERE_HOME/configuration/org.eclipse.equinox.simpleconfigurator/bundles.info"

@@ -8,6 +8,8 @@ services:
       - postgres
     volumes:
       - ./src:${INSTALLATION_HOME}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_HOST=${POSTGRES_HOST}
