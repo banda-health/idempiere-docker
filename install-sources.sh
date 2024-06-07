@@ -61,4 +61,15 @@ if [[ -d "$INSTALLATION_HOME/data" ]]; then
     fi
 fi
 
+# Copy any migrations
+if [[ -d "$INSTALLATION_HOME/migrations" ]]; then
+    echo "Copying migrations..."
+    cp -R "$INSTALLATION_HOME/migrations" "$IDEMPIERE_HOME"
+
+    if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
+        echo "Removing source migrations after copy..."
+        rm -fr "$INSTALLATION_HOME/migrations"
+    fi
+fi
+
 echo "Finished installing sources!"
