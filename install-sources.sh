@@ -62,13 +62,13 @@ if [[ -d "$INSTALLATION_HOME/data" ]]; then
 fi
 
 # Copy any migrations
-if [[ -d "$INSTALLATION_HOME/migrations" ]]; then
+if [[ -d "$INSTALLATION_HOME/migration" ]]; then
     echo "Copying migrations..."
-    cp -R "$INSTALLATION_HOME/migrations" "$IDEMPIERE_HOME"
+    cp -R "$INSTALLATION_HOME/migration" "$IDEMPIERE_HOME"
 
     if [[ $REMOVE_SOURCES_AFTER_COPY == "true" ]]; then
         echo "Removing source migrations after copy..."
-        rm -fr "$INSTALLATION_HOME/migrations"
+        rm -fr "$INSTALLATION_HOME/migration"
     fi
 fi
 
