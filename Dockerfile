@@ -25,9 +25,14 @@ RUN apt-get update && \
 RUN sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
+# Set prerequisites to install MS fonts that reports use
+ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
+
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends nano postgresql-client telnet && \
+    apt-get install -y --no-install-recommends nano postgresql-client telnet ttf-mscorefonts-installer && \
     rm -rf /var/lib/apt/lists/*
+RUN fc-cache -fv
 
 ENV IDEMPIERE_HOME /opt/idempiere
 ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins

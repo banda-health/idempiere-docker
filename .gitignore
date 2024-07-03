@@ -2,3 +2,4 @@ src/
 .env
 idempiere-db.dmp
 idempiere/
+idempiere.properties
