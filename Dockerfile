@@ -1,8 +1,8 @@
 FROM eclipse-temurin:17-jdk AS builder
 
-ENV IDEMPIERE_HOME /opt/idempiere
-ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins
-ENV IDEMPIERE_LOGS_HOME $IDEMPIERE_HOME/log
+ENV IDEMPIERE_HOME=/opt/idempiere
+ENV IDEMPIERE_PLUGINS_HOME=$IDEMPIERE_HOME/plugins
+ENV IDEMPIERE_LOGS_HOME=$IDEMPIERE_HOME/log
 
 WORKDIR $IDEMPIERE_HOME
 
@@ -11,9 +11,6 @@ COPY idempiere/idempiere.build.gtk.linux.x86_64.tar.gz /tmp/idempiere/
 RUN tar -zxf /tmp/idempiere/idempiere.build.gtk.linux.x86_64.tar.gz --directory /tmp/idempiere && \
     mv /tmp/idempiere/x86_64/* $IDEMPIERE_HOME && \
     rm -rf /tmp/idempiere
-
-# Copy over shell script
-COPY idempiere-server.sh .
 
 FROM eclipse-temurin:17-jdk AS idempiere
 WORKDIR /
@@ -31,9 +28,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 RUN fc-cache -fv
 
-ENV IDEMPIERE_HOME /opt/idempiere
-ENV IDEMPIERE_PLUGINS_HOME $IDEMPIERE_HOME/plugins
-ENV IDEMPIERE_LOGS_HOME $IDEMPIERE_HOME/log
+ENV IDEMPIERE_HOME=/opt/idempiere
+ENV IDEMPIERE_PLUGINS_HOME=$IDEMPIERE_HOME/plugins
+ENV IDEMPIERE_LOGS_HOME=$IDEMPIERE_HOME/log
 
 # Copy over iDempiere files
 COPY --from=builder $IDEMPIERE_HOME $IDEMPIERE_HOME
@@ -43,6 +40,8 @@ COPY docker-entrypoint.sh .
 COPY health-check.sh .
 COPY install-sources.sh .
 COPY install-migrations-incrementally.sh .
+
+RUN ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere
 
 # Set the entrypoint & commands
 HEALTHCHECK --interval=5s --timeout=5s --retries=200 --start-period=5s CMD /health-check.sh

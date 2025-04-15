@@ -7,11 +7,6 @@ cd $IDEMPIERE_HOME
 # this must be created first so the health check knows what the status is
 touch ./.unhealthy
 
-# Link the idempiere command to the server script
-if [[ ! -f "/usr/bin/idempiere" ]]; then
-    ln -s $IDEMPIERE_HOME/idempiere-server.sh /usr/bin/idempiere > /dev/null 2>&1
-fi
-
 JAVA_OPTIONS=${JAVA_OPTIONS:-${JAVA_OPTIONS:[]}}
 KEY_STORE_PASS=${KEY_STORE_PASS:-bandaHealth}
 KEY_STORE_ON=${KEY_STORE_ON:-bandahealth.org}
@@ -20,9 +15,10 @@ KEY_STORE_O=${KEY_STORE_O:-iDempiere}
 KEY_STORE_L=${KEY_STORE_L:-Colorado Springs}
 KEY_STORE_S=${KEY_STORE_S:-CO}
 KEY_STORE_C=${KEY_STORE_C:-US}
-IDEMPIERE_HOST=${IDEMPIERE_HOST:-0.0.0.0}
+HOST=${HOST:-0.0.0.0}
 IDEMPIERE_PORT=${IDEMPIERE_PORT:-8080}
 IDEMPIERE_SSL_PORT=${IDEMPIERE_SSL_PORT:-8443}
+TELNET_PORT=${TELNET_PORT:-12612}
 DB_HOST=${DB_HOST:-postgres}
 DB_PORT=${DB_PORT:-5432}
 DB_NAME=${DB_NAME:-idempiere}
@@ -85,7 +81,7 @@ if [[ "$1" == "idempiere" ]]; then
     fi
 
     echo "Executing console-setup..."
-    echo -e "$JAVA_HOME\n$JAVA_OPTIONS\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$IDEMPIERE_HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
+    echo -e "$JAVA_HOME\n$JAVA_OPTIONS\n$IDEMPIERE_HOME\n$KEY_STORE_PASS\n$KEY_STORE_ON\n$KEY_STORE_OU\n$KEY_STORE_O\n$KEY_STORE_L\n$KEY_STORE_S\n$KEY_STORE_C\n$HOST\n$IDEMPIERE_PORT\n$IDEMPIERE_SSL_PORT\nN\n2\n$DB_HOST\n$DB_PORT\n$DB_NAME\n$DB_USER\n$DB_PASS\n$DB_ADMIN_PASS\n$MAIL_HOST\n$MAIL_USER\n$MAIL_PASS\n$MAIL_ADMIN\nY\n" | ./console-setup.sh
 
     if [[ -f "idempiere.properties.old" ]]; then
         echo "Old properties file exists, so copying over former properties..."      
