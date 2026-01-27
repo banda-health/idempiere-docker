@@ -10,7 +10,7 @@ services:
       - ./src:${INSTALLATION_HOME}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    container_name: '${COMPOSE_PROJECT_NAME}_idempiere'
+    container_name: '${CONTAINER_NAME}_idempiere'
     environment:
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_HOST=${POSTGRES_HOST}
@@ -30,7 +30,7 @@ services:
 
   postgres:
     image: postgres:16
-    container_name: '${COMPOSE_PROJECT_NAME}_postgres'
+    container_name: '${CONTAINER_NAME}_postgres'
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - PGPORT=${POSTGRES_PORT}
