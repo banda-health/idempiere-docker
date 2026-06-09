@@ -24,7 +24,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends nano postgresql-client-16 telnet ttf-mscorefonts-installer && \
+    apt-get install -y --no-install-recommends nano postgresql-client telnet ttf-mscorefonts-installer && \
     rm -rf /var/lib/apt/lists/*
 RUN fc-cache -fv
 
