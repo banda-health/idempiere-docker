@@ -7,6 +7,7 @@ services:
       - ./src:${INSTALLATION_HOME}
     container_name: '${CONTAINER_NAME}_idempiere'
     environment:
+      - TZ=${TZ:-Africa/Nairobi}
       - DB_ADMIN_PASS=${POSTGRES_PASSWORD}
       - DB_HOST=${POSTGRES_HOST}
       - DB_NAME=${DB_NAME}
